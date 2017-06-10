@@ -1,20 +1,58 @@
 module.exports = function(app){
 
-  app.post('/users', (req, res) => {
-    console.log(req);
-    db.collection('users').save(req.body, (err, result) => {
-      if (err) return console.log(err)
+  function handleError(res, reason, message, code) {
+    console.log("ERROR: " + reason);
+    res.status(code || 500).json({"error": message});
+  }
 
-      console.log('saved to database');
-      res.redirect('/')
-    })
-  })
+  // Add user
+  app.post("/api/users", function(req, res) {
+    var newUser = req.body;
 
-  app.get('/users', (req, res) => {
-    db.collection('Users').find().toArray(function(err, results) {
-      console.log(results);
+    if (!(req.body.firstName || req.body.lastName)) {
+      handleError(res, "Invalid user input", "Must provide a first or last name.", 400);
+    }
+    db.collection('users').insertOne(newUser, function(err, doc) {
+      console.log(doc);
+      if (err) {
+        handleError(res, err.message, "Failed to create new user.");
+      } else {
+        res.status(201).json(doc.ops[0]);
+      }
+    });
+  });
 
+  // Get all users
+  app.get('/api/users', (req, res) => {
+    db.collection('users').find().toArray(function(err, results) {
       res.send(results);
     })
   });
+
+  // Delete user
+  // app.delete('/api/deleteuser', (req, res) => {
+  //   var item = db.collection('users').findOne({'_id': req.body._id});
+  //   console.log(item);
+  //   db.collection('users').remove({_id: item._id}, true)
+  // });
+
+  app.delete('/api/deleteuser', (req, res) => {
+    console.log(req);
+    db.collection('users', function(err, collection){
+        console.log(req.body.email);
+        collection.remove({
+            "email": req.body.email
+        }, function(err, removed){
+            if (err) {
+              throw err;
+            } else {
+              res.send({
+                result: removed,
+              })
+            }
+        });
+    });
+  });
+
+
 }

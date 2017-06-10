@@ -1,7 +1,8 @@
 // Declarations
-const express = require('express')
-const bodyParser= require('body-parser')
-const app = express()
+const express = require('express');
+const bodyParser= require('body-parser');
+const app = express();
+var router = express.Router();
 require('dotenv').config({path: 'keys.env'})
 
 // Config
@@ -10,4 +11,4 @@ require('./config/headers/headers.js')(app);
 require('./config/mongo/mongo.js')(app);
 
 // Routes
-require('./routes/api/users/users-routes.js')(app);
+require('./routes/api/users/users-routes.js')(app, router);
