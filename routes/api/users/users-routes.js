@@ -5,22 +5,12 @@ module.exports = function(app, router, User){
     res.status(status || 400).json({"error": err.errmsg, "code": err.code});
   }
 
-  // Add user
-  // app.post("/api/users", function(req, res) {
-  //   var newUser = req.body;
-  //
-  //   if (!(req.body.firstName || req.body.lastName)) {
-  //     handleError(res, "Invalid user input", "Must provide a first or last name.", 400);
-  //   }
-  //   db.collection('users').insertOne(newUser, function(err, doc) {
-  //     console.log(doc);
-  //     if (err) {
-  //       handleError(res, err.message, "Failed to create new user.");
-  //     } else {
-  //       res.status(201).json(doc.ops[0]);
-  //     }
-  //   });
-  // });
+  var errorBodies = {
+    incorrectUsernameOrPassword: {
+      code: 12000,
+      message: 'The username or password you entered is incorrect.'
+    }
+  }
 
   app.post('/api/users', function(req, res) {
     var user = new User({
@@ -39,13 +29,32 @@ module.exports = function(app, router, User){
   })
 
   app.get('/api/users', (req, res) => {
-    User.find({}, function(err, users) {
+    User.find({}, {password: 0}, function(err, users) {
       if (err) handleError(res, err);
 
       // object of all the users
       res.send(users);
     });
   });
+
+  app.post('/api/user', (req, res) => {
+    User.findOne({ username: req.body.username }, function(err, user) {
+       if (err) throw err;
+       // test a matching password
+       if (!user) {
+        res.status(400).send(errorBodies.incorrectUsernameOrPassword)
+      } else {
+        User.schema.methods.comparePassword(req.body.password, user.password, function(err, isMatch) {
+            if (err) throw err;
+            if (isMatch) {
+              res.status(200).send(user);
+            } else {
+              res.status(400).send(errorBodies.incorrectUsernameOrPassword);
+            }
+        });
+      }
+   });
+  })
 
   app.delete('/api/deleteuser', (req, res) => {
     User.findByIdAndRemove(req.body._id, function(err, result) {

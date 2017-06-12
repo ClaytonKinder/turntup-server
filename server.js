@@ -4,13 +4,16 @@ const bodyParser= require('body-parser');
 var mongoose = require('mongoose');
 const app = express();
 var router = express.Router();
-require('dotenv').config({path: 'keys.env'})
+require('dotenv').config({path: 'keys.env'});
+var bcrypt = require('bcrypt');
+var SALT_WORK_FACTOR = 10;
 
 // Config
 require('./config/settings/settings.js')(app, bodyParser);
 require('./config/headers/headers.js')(app);
 require('./config/mongo/mongo.js')(app, mongoose);
 
+// Schemas
+var User = require('./routes/api/users/users-schema.js')(app, mongoose, bcrypt, SALT_WORK_FACTOR);
 // Routes
-var User = require('./routes/api/users/users-schema.js')(app, mongoose);
 require('./routes/api/users/users-routes.js')(app, router, User);
