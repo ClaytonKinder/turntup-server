@@ -39,13 +39,13 @@ module.exports = function(app, router, User){
 
   app.post('/api/user', (req, res) => {
     User.findOne({ username: req.body.username }, function(err, user) {
-       if (err) throw err;
+       if (err) handleError(res, err);
        // test a matching password
        if (!user) {
         res.status(400).send(errorBodies.incorrectUsernameOrPassword)
       } else {
         User.schema.methods.comparePassword(req.body.password, user.password, function(err, isMatch) {
-            if (err) throw err;
+            if (err) handleError(res, err);
             if (isMatch) {
               res.status(200).send(user);
             } else {
@@ -54,6 +54,14 @@ module.exports = function(app, router, User){
         });
       }
    });
+  })
+
+  app.post('/api/updateuser', (req, res) => {
+    User.findByIdAndUpdate(req.body._id, req.body, function(err, user) {
+      if (err) handleError(res, err);
+
+      res.status(200).send(user);
+    });
   })
 
   app.delete('/api/deleteuser', (req, res) => {

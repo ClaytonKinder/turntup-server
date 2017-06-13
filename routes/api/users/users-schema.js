@@ -32,6 +32,7 @@ module.exports = function(app, mongoose, bcrypt, SALT_WORK_FACTOR){
   });
 
   userSchema.methods.comparePassword = function(candidatePassword, dbPassword, cb) {
+    console.log(candidatePassword, dbPassword);
     bcrypt.compare(candidatePassword, dbPassword, function(err, isMatch) {
         if (err) return cb(err);
         cb(null, isMatch);
