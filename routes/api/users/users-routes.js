@@ -5,10 +5,18 @@ module.exports = function(app, router, User){
     res.status(status || 400).json({"error": err.errmsg, "code": err.code});
   }
 
+  function updateUser(original, updated) {
+    original.firstName = updated.firstName;
+    original.lastName = updated.lastName;
+    original.email = updated.email;
+    original.password = updated.password;
+    return original;
+  }
+
   var errorBodies = {
-    incorrectUsernameOrPassword: {
+    incorrectEmailOrPassword: {
       code: 12000,
-      message: 'The username or password you entered is incorrect.'
+      message: 'The email or password you entered is incorrect.'
     }
   }
 
@@ -17,13 +25,13 @@ module.exports = function(app, router, User){
       firstName: req.body.firstName,
       lastName: req.body.lastName,
       email: req.body.email,
-      username: req.body.username,
-      password: req.body.password
+      password: req.body.password,
+      isTurnt: false
     });
-    // call the built-in save method to save to the database
+    console.log(user);
     user.save(function(err, result) {
       if (err) handleError(res, err);
-
+      console.log(result);
       res.send(result);
     });
   })
@@ -38,18 +46,19 @@ module.exports = function(app, router, User){
   });
 
   app.post('/api/user', (req, res) => {
-    User.findOne({ username: req.body.username }, function(err, user) {
+    var regex = new RegExp(["^", req.body.email, "$"].join(""), "i");
+    User.findOne({ email: regex }, function(err, user) {
        if (err) handleError(res, err);
        // test a matching password
        if (!user) {
-        res.status(400).send(errorBodies.incorrectUsernameOrPassword)
+        res.status(400).send(errorBodies.incorrectEmailOrPassword)
       } else {
         User.schema.methods.comparePassword(req.body.password, user.password, function(err, isMatch) {
             if (err) handleError(res, err);
             if (isMatch) {
               res.status(200).send(user);
             } else {
-              res.status(400).send(errorBodies.incorrectUsernameOrPassword);
+              res.status(400).send(errorBodies.incorrectEmailOrPassword);
             }
         });
       }
@@ -57,10 +66,15 @@ module.exports = function(app, router, User){
   })
 
   app.post('/api/updateuser', (req, res) => {
-    User.findByIdAndUpdate(req.body._id, req.body, function(err, user) {
-      if (err) handleError(res, err);
+    User.findById(req.body._id, function(err, user) {
+      if (err) throw err;
 
-      res.status(200).send(user);
+      user = updateUser(user, req.body);
+      user.save(function(err) {
+        if (err) handleError(res, err);
+
+        res.status(200).send(user);
+      });
     });
   })
 
