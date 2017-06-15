@@ -14,6 +14,6 @@ require('./config/headers/headers.js')(app);
 require('./config/mongo/mongo.js')(app, mongoose);
 
 // Schemas
-var User = require('./routes/api/users/users-schema.js')(app, mongoose, bcrypt, SALT_WORK_FACTOR);
+var User = require('./schemas/users/users-schema.js')(app, mongoose, bcrypt, SALT_WORK_FACTOR);
 // Routes
 require('./routes/api/users/users-routes.js')(app, router, User);

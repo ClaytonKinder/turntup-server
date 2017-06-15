@@ -1,7 +1,10 @@
 module.exports = function(app, router, User){
 
-  function handleError(res, err, status) {
+  function handleError(res, err, msg, status) {
     console.log("ERROR: " + err.errmsg);
+    if (!err.errmsg) {
+      err.errmsg = msg;
+    }
     res.status(status || 400).json({"error": err.errmsg, "code": err.code});
   }
 
@@ -20,7 +23,7 @@ module.exports = function(app, router, User){
     }
   }
 
-  app.post('/api/users', function(req, res) {
+  app.post('/api/users/createuser', function(req, res) {
     var user = new User({
       firstName: req.body.firstName,
       lastName: req.body.lastName,
@@ -28,59 +31,56 @@ module.exports = function(app, router, User){
       password: req.body.password,
       isTurnt: false
     });
-    console.log(user);
     user.save(function(err, result) {
-      if (err) handleError(res, err);
-      console.log(result);
+      if (err) handleError(res, err, 'Could not create user at this time.');
       res.send(result);
     });
   })
 
-  app.get('/api/users', (req, res) => {
+  app.get('/api/users/getusers', (req, res) => {
     User.find({}, {password: 0}, function(err, users) {
-      if (err) handleError(res, err);
-
+      if (err) handleError(res, err, 'Could not get users at this time.');
       // object of all the users
       res.send(users);
     });
   });
 
-  app.post('/api/user', (req, res) => {
+  app.post('/api/users/getuser', (req, res) => {
     var regex = new RegExp(["^", req.body.email, "$"].join(""), "i");
     User.findOne({ email: regex }, function(err, user) {
-       if (err) handleError(res, err);
+       if (err) handleError(res, err, 'The email or password that you provided is incorrect.');
        // test a matching password
        if (!user) {
-        res.status(400).send(errorBodies.incorrectEmailOrPassword)
+        res.status(422).send(errorBodies.incorrectEmailOrPassword)
       } else {
         User.schema.methods.comparePassword(req.body.password, user.password, function(err, isMatch) {
-            if (err) handleError(res, err);
+            if (err) handleError(res, err, 'The email or password that you provided is incorrect.', 422);
             if (isMatch) {
               res.status(200).send(user);
             } else {
-              res.status(400).send(errorBodies.incorrectEmailOrPassword);
+              res.status(422).send(errorBodies.incorrectEmailOrPassword);
             }
         });
       }
    });
   })
 
-  app.post('/api/updateuser', (req, res) => {
+  app.post('/api/users/updateuser', (req, res) => {
     User.findById(req.body._id, function(err, user) {
       if (err) throw err;
 
       user = updateUser(user, req.body);
       user.save(function(err) {
-        if (err) handleError(res, err);
+        if (err) handleError(res, err, 'Could not update user at this time.');
 
         res.status(200).send(user);
       });
     });
   })
 
-  app.delete('/api/deleteuser', (req, res) => {
+  app.delete('/api/users/deleteuser', (req, res) => {
     User.findByIdAndRemove(req.body._id, function(err, result) {
-      if (err) handleError(res, err);
+      if (err) handleError(res, err, 'Could not delete user at this time.');
 
       // we have deleted the user
       res.send(result);
