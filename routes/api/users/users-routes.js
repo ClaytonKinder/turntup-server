@@ -5,6 +5,7 @@ module.exports = function(app, router, User){
     if (!err.errmsg) {
       err.errmsg = msg;
     }
+    console.log(err);
     res.status(status || 400).json({"error": err.errmsg, "code": err.code});
   }
 

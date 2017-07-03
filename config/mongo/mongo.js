@@ -4,7 +4,8 @@ module.exports = function(app, mongoose){
   mongoLink += process.env.DB_USERNAME;
   mongoLink += ':';
   mongoLink += process.env.DB_PASSWORD;
-  mongoLink += '@ds113282.mlab.com:13282/turntup';
+  mongoLink += '@ds113282.mlab.com:13282/';
+  mongoLink += process.env.DB_NAME;
   mongoose.connect(mongoLink, (err, database) => {
     if (err) return console.log(err)
     db = database;
