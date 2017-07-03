@@ -17,6 +17,11 @@ module.exports = function(app, router, User){
     return original;
   }
 
+  function updateUserTurntStatus(original, updated) {
+    original.isTurnt = updated.isTurnt;
+    return original;
+  }
+
   var errorBodies = {
     incorrectEmailOrPassword: {
       code: 12000,
@@ -71,6 +76,22 @@ module.exports = function(app, router, User){
       if (err) throw err;
 
       user = updateUser(user, req.body);
+      user.save(function(err) {
+        if (err) handleError(res, err, 'Could not update user at this time.');
+
+        res.status(200).send(user);
+      });
+    });
+  })
+
+  app.post('/api/users/updateuserturntstatus', (req, res) => {
+    console.log(req);
+    User.findById(req.body.details._id, function(err, user) {
+      if (err) throw err;
+
+      user = updateUserTurntStatus(user, req.body.details);
+      user.password = undefined;
+      console.log(user);
       user.save(function(err) {
         if (err) handleError(res, err, 'Could not update user at this time.');
 
