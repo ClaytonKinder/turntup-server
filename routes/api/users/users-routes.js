@@ -71,6 +71,20 @@ module.exports = function(app, router, User){
    });
   })
 
+  app.post('/api/users/getuserbyid', (req, res) => {
+    console.log('BODY: ', req);
+    User.findById(req.body._id, function(err, user) {
+       if (err) handleError(res, err, 'The email or password that you provided is incorrect.');
+       // test a matching password
+       if (!user) {
+        res.status(422).send(errorBodies.incorrectEmailOrPassword)
+      } else {
+        user.password = undefined;
+        res.status(200).send(user);
+      }
+   });
+  })
+
   app.post('/api/users/updateuser', (req, res) => {
     User.findById(req.body._id, function(err, user) {
       if (err) throw err;
@@ -86,11 +100,10 @@ module.exports = function(app, router, User){
 
   app.post('/api/users/updateuserturntstatus', (req, res) => {
     console.log(req);
-    User.findById(req.body.details._id, function(err, user) {
+    User.findById(req.body._id, function(err, user) {
       if (err) throw err;
 
-      user = updateUserTurntStatus(user, req.body.details);
-      user.password = undefined;
+      user = updateUserTurntStatus(user, req.body);
       console.log(user);
       user.save(function(err) {
         if (err) handleError(res, err, 'Could not update user at this time.');

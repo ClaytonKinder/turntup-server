@@ -1,4 +1,4 @@
-module.exports = function(app, router, User, jwt){
+module.exports = function(app, router, User, jwt, passport){
 
   function handleError(res, err, msg, status) {
     console.log("ERROR: " + err.errmsg);

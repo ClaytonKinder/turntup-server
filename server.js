@@ -9,6 +9,8 @@ var bcrypt = require('bcrypt');
 var SALT_WORK_FACTOR = 10;
 app.set('secret', process.env.SECRET);
 var jwt = require('jsonwebtoken');
+var passport = require('passport');
+var Strategy = require('passport-local').Strategy;
 
 // Config
 require('./config/settings/settings.js')(app, bodyParser);
@@ -19,4 +21,4 @@ require('./config/mongo/mongo.js')(app, mongoose);
 var User = require('./schemas/users/users-schema.js')(app, mongoose, bcrypt, SALT_WORK_FACTOR);
 // Routes
 require('./routes/api/users/users-routes.js')(app, router, User);
-require('./routes/api/authentication/authentication-routes.js')(app, router, User, jwt);
+require('./routes/api/authentication/authentication-routes.js')(app, router, User, jwt, passport);
