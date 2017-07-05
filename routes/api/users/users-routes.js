@@ -72,7 +72,6 @@ module.exports = function(app, router, User){
   })
 
   app.post('/api/users/getuserbyid', (req, res) => {
-    console.log('BODY: ', req);
     User.findById(req.body._id, function(err, user) {
        if (err) handleError(res, err, 'The email or password that you provided is incorrect.');
        // test a matching password
@@ -99,12 +98,10 @@ module.exports = function(app, router, User){
   })
 
   app.post('/api/users/updateuserturntstatus', (req, res) => {
-    console.log(req);
     User.findById(req.body._id, function(err, user) {
       if (err) throw err;
 
       user = updateUserTurntStatus(user, req.body);
-      console.log(user);
       user.save(function(err) {
         if (err) handleError(res, err, 'Could not update user at this time.');
 

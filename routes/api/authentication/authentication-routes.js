@@ -26,9 +26,7 @@ module.exports = function(app, router, User, jwt, passport){
 
   app.post('/api/authentication/login', (req, res) => {
     var regex = new RegExp(["^", req.body.email, "$"].join(""), "i");
-    console.log(req.body);
     User.findOne({ email: regex }, function(err, user) {
-      console.log(user);
        if (err) handleError(res, err, 'The email or password that you provided is incorrect.');
        // test a matching password
        if (!user) {
@@ -43,7 +41,6 @@ module.exports = function(app, router, User, jwt, passport){
                 expiresIn: 60 * 60 * 24 // expires in 24 hours
               });
               obj.user = user;
-              console.log('USER WITH TOKEN', obj);
               res.status(200).send(obj);
 
             } else {
